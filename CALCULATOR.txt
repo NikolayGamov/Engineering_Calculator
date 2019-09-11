@@ -1,0 +1,603 @@
+#pragma once
+#include <stdio.h>
+#include <conio.h>
+#include <math.h>
+#include<stdlib.h>
+#include<string.h>
+#include <locale.h>
+#include<io.h>
+
+namespace lab3 {
+
+	using namespace System;
+	using namespace System::ComponentModel;
+	using namespace System::Collections;
+	using namespace System::Windows::Forms;
+	using namespace System::Data;
+	using namespace System::Drawing;
+	using namespace System::Runtime::InteropServices;
+
+	struct elem
+	{
+		int tip;
+		char value[15];
+	};
+	
+	struct Node
+	{
+		elem info;
+		Node* next;
+	};
+	struct List
+	{
+		Node* top;
+		Node* bottom;
+	};
+	struct Stack
+	{
+		Node* top;
+	};
+	struct Iterator
+	{
+		Node* current;
+	};
+
+	/// <summary>
+	/// —водка дл€ Form1
+	/// </summary>
+	public ref class Form1 : public System::Windows::Forms::Form
+	{
+	public:
+		Form1(void)
+		{
+			InitializeComponent();
+			//
+			//TODO: добавьте код конструктора
+			//
+		}
+
+	protected:
+		/// <summary>
+		/// ќсвободить все используемые ресурсы.
+		/// </summary>
+		~Form1()
+		{
+			if (components)
+			{
+				delete components;
+			}
+		}
+
+	protected: 
+	private: System::Windows::Forms::TextBox^  textBox1;
+	private: System::Windows::Forms::TextBox^  textBox2;
+	private: System::Windows::Forms::Button^  button20;
+	private: System::Windows::Forms::Label^  label1;
+
+	private: System::Windows::Forms::TextBox^  textBox3;
+	private: System::Windows::Forms::Label^  label3;
+	private: System::Windows::Forms::TextBox^  textBox4;
+	private: System::Windows::Forms::Label^  label4;
+	private: System::Windows::Forms::Label^  label2;
+	public:
+
+//block for total		
+List initList()
+{
+	List list = {NULL, NULL};
+	return list;
+}
+Iterator begin(List &list)
+{
+	Iterator i = {list.top};
+	return i;
+}
+Iterator end(List &list)
+{
+	Iterator i = {list.bottom};
+	return i;
+}
+bool next(Iterator &i)
+{
+	if(!i.current)
+		return false;
+	i.current = i.current->next;
+}
+bool check(Iterator &i)
+{
+	return i.current;
+}
+void push(List& list, elem infoo) //DANGER
+{
+	Node* temp = new Node;
+	temp->info = infoo;
+	temp->next = NULL;
+	
+	if(!(list.top && list.bottom))
+		list.bottom = list.top = temp;
+		
+	
+	list.bottom->next = temp;
+	list.bottom = temp;
+}
+elem get(Iterator &i)
+{
+	elem inf;
+	inf = i.current->info;
+	return inf;
+}
+void printList(List &list)
+{
+	for( Iterator i = begin(list); check(i); next(i))
+	{
+		String^ opz = gcnew String(get(i).value);
+
+		this->textBox3->Text += opz;
+		this->textBox3->Text += " <- ";
+	}
+}
+void delfirst(List &list)
+{
+	Node* del = new Node;
+	del = list.top;
+	list.top = del->next;
+	delete del;
+}
+
+//block for operators
+Stack initStack()
+{
+	Stack s = {NULL};
+	return s;
+}
+void pushS(Stack &s, elem info)
+{
+	Node* n = new Node;
+	n->info = info;
+	if(empty(s))
+	{
+		s.top = n;
+		n->next = NULL;
+	}
+	
+	else
+	{
+		n->next = s.top;
+		s.top = n;
+	}
+}
+bool empty(Stack &s)
+{
+	return !s.top;
+}
+void delfirstS(Stack &s)
+{
+	Node* del = new Node;
+	del = s.top;
+	s.top = del->next;
+	delete del;
+}
+
+//block for parsing
+void printparse(elem* pa, int p)
+				{
+					for(int i = 0; i < p; i++)
+							 {
+								 String^ h = gcnew String((pa + i)->value);
+				 
+								 this->textBox2->Text += h;
+								 this->textBox2->Text += "~~";
+
+							 }
+				}
+void parse(char* str, elem* pa, int &p)
+			{
+				for(int i = 0; str[i] != '=';)
+				 {
+				
+					 if(number(str+i))
+					 {
+						 (pa+p)->tip = 0;
+					 
+						 char lexem[10];
+						 for(int j = 0; number(str+i); j++, i++)
+							 lexemcreate(lexem + j, str + i);
+						 
+					
+						 strcpy((pa+p)->value, lexem);
+				
+						 p++;
+					 }
+
+					 else if(binoper1(str+i))
+					 {
+						 (pa+p)->tip = 1; 
+						
+						 char lexem[2];
+						 lexemcreate(lexem, str + i);
+						 
+						 strcpy((pa+p)->value, lexem);
+					 
+						 p++;
+						 i++;
+					 }
+
+					 else if(binoper2(str+i))
+					 {
+						 (pa+p)->tip = 2; 
+						
+						 char lexem[2];
+						 lexemcreate(lexem, str + i);
+						 
+						 strcpy((pa+p)->value, lexem);
+					 
+						 p++;
+						 i++;
+					 }
+
+					 else if(power(str+i))
+					 {
+						 (pa+p)->tip = 3; 
+						
+						 char lexem[2];
+						 lexemcreate(lexem, str + i);
+						 
+						 strcpy((pa+p)->value, lexem);
+					 
+						 p++;
+						 i++;
+					 }
+					 
+					 else if(unaroper(str+i))
+					 {
+						 (pa+p)->tip = 4;
+					 
+						 char lexem[10];
+						 for(int j = 0; unaroper(str+i); j++, i++)
+							lexemcreate(lexem + j, str + i);
+					 
+						 strcpy((pa+p)->value, lexem);
+
+						 p++;
+					 }
+				
+					 else if(skobka(str+i))
+					 {
+						 (pa+p)->tip = 5; 
+						 
+						 char lexem[2];
+						 lexemcreate(lexem, str + i);
+						 
+						 strcpy((pa+p)->value, lexem);
+						 
+						 p++;
+						 i++;
+					 }
+				 
+					 else
+						 i++;
+				}
+			}
+bool number(char* str)
+			{
+				if((*str >= '0' && *str <= '9') || *str == '.')
+					return true;
+				else
+					return false;
+			}
+bool binoper1(char* str)
+			{
+				if(*str == '+' || *str == '-')
+					return true;
+				else
+					return false;
+
+			}
+bool binoper2(char* str)
+			{
+				if(*str == '*' || *str == '/')
+					return true;
+				else
+					return false;
+
+			}
+bool power(char* str)
+{
+	if(*str == '^')
+		return true;
+	else
+		return false;
+}
+bool unaroper(char* str)
+			{
+				if(*str >= 'a' && *str <= 'z')
+					return true;
+				else
+					return false;
+			}
+bool skobka(char* str)
+			{
+				if(*str == '(' || *str == ')')
+					return true;
+				else
+					return false;
+			}
+void lexemcreate(char* lexem, char* str)
+			{
+				*lexem = *str;
+				lexem[1] = '\0';
+			}
+
+//block for calcs
+void calcunar(char* oper, double &res)
+{
+	if(strcmp("tg", oper) == 0)
+		res = tan(res);
+	else if(strcmp("cos", oper) == 0)
+		res = cos(res);
+	else if(strcmp("sin", oper) == 0)
+		res = sin(res);
+	//else if(strcmp("ctg", oper) == 0)
+		//res = ctg(res);
+	/*else if(strcmp("ln", oper) == 0)
+		res = ln(res);*/
+	else if(strcmp("sqrt", oper) == 0)
+		res = sqrt(res);
+	else
+		res = res;
+
+}
+void calcbinar(char* oper, double &op1, double op2)
+{
+	if(strcmp("+", oper) == 0)
+		op1 = op1 + op2;
+	else if(strcmp("-", oper) == 0)
+		op1 = op1 - op2;
+	else if(strcmp("*", oper) == 0)
+		op1 = op1 * op2;
+	else if(strcmp("/", oper) == 0)
+		op1 = op1 / op2;
+	else if(strcmp("^", oper) == 0)
+		op1 = pow(op1,op2);
+}
+
+			 /// <summary>
+		/// “ребуетс€ переменна€ конструктора.
+		/// </summary>
+		System::ComponentModel::Container ^components;
+
+#pragma region Windows Form Designer generated code
+		/// <summary>
+		/// ќб€зательный метод дл€ поддержки конструктора - не измен€йте
+		/// содержимое данного метода при помощи редактора кода.
+		/// </summary>
+		void InitializeComponent(void)
+		{
+			this->textBox1 = (gcnew System::Windows::Forms::TextBox());
+			this->textBox2 = (gcnew System::Windows::Forms::TextBox());
+			this->button20 = (gcnew System::Windows::Forms::Button());
+			this->label1 = (gcnew System::Windows::Forms::Label());
+			this->label2 = (gcnew System::Windows::Forms::Label());
+			this->textBox3 = (gcnew System::Windows::Forms::TextBox());
+			this->label3 = (gcnew System::Windows::Forms::Label());
+			this->textBox4 = (gcnew System::Windows::Forms::TextBox());
+			this->label4 = (gcnew System::Windows::Forms::Label());
+			this->SuspendLayout();
+			// 
+			// textBox1
+			// 
+			this->textBox1->Location = System::Drawing::Point(60, 6);
+			this->textBox1->Name = L"textBox1";
+			this->textBox1->Size = System::Drawing::Size(260, 20);
+			this->textBox1->TabIndex = 1;
+			// 
+			// textBox2
+			// 
+			this->textBox2->Location = System::Drawing::Point(60, 35);
+			this->textBox2->Name = L"textBox2";
+			this->textBox2->Size = System::Drawing::Size(260, 20);
+			this->textBox2->TabIndex = 2;
+			// 
+			// button20
+			// 
+			this->button20->Location = System::Drawing::Point(326, 6);
+			this->button20->Name = L"button20";
+			this->button20->Size = System::Drawing::Size(71, 107);
+			this->button20->TabIndex = 21;
+			this->button20->Text = L"calc";
+			this->button20->UseVisualStyleBackColor = true;
+			this->button20->Click += gcnew System::EventHandler(this, &Form1::button20_Click);
+			// 
+			// label1
+			// 
+			this->label1->AutoSize = true;
+			this->label1->Location = System::Drawing::Point(12, 9);
+			this->label1->Name = L"label1";
+			this->label1->Size = System::Drawing::Size(42, 13);
+			this->label1->TabIndex = 22;
+			this->label1->Text = L"source:";
+			// 
+			// label2
+			// 
+			this->label2->AutoSize = true;
+			this->label2->Location = System::Drawing::Point(12, 38);
+			this->label2->Name = L"label2";
+			this->label2->Size = System::Drawing::Size(42, 13);
+			this->label2->TabIndex = 23;
+			this->label2->Text = L"parsed:";
+			// 
+			// textBox3
+			// 
+			this->textBox3->Location = System::Drawing::Point(60, 66);
+			this->textBox3->Name = L"textBox3";
+			this->textBox3->Size = System::Drawing::Size(260, 20);
+			this->textBox3->TabIndex = 25;
+			// 
+			// label3
+			// 
+			this->label3->AutoSize = true;
+			this->label3->Location = System::Drawing::Point(12, 69);
+			this->label3->Name = L"label3";
+			this->label3->Size = System::Drawing::Size(32, 13);
+			this->label3->TabIndex = 26;
+			this->label3->Text = L"OPZ:";
+			// 
+			// textBox4
+			// 
+			this->textBox4->Location = System::Drawing::Point(60, 93);
+			this->textBox4->Name = L"textBox4";
+			this->textBox4->Size = System::Drawing::Size(260, 20);
+			this->textBox4->TabIndex = 27;
+			// 
+			// label4
+			// 
+			this->label4->AutoSize = true;
+			this->label4->Location = System::Drawing::Point(12, 96);
+			this->label4->Name = L"label4";
+			this->label4->Size = System::Drawing::Size(40, 13);
+			this->label4->TabIndex = 28;
+			this->label4->Text = L"Result:";
+			// 
+			// Form1
+			// 
+			this->AutoScaleDimensions = System::Drawing::SizeF(6, 13);
+			this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
+			this->ClientSize = System::Drawing::Size(414, 139);
+			this->Controls->Add(this->label4);
+			this->Controls->Add(this->textBox4);
+			this->Controls->Add(this->label3);
+			this->Controls->Add(this->textBox3);
+			this->Controls->Add(this->label2);
+			this->Controls->Add(this->label1);
+			this->Controls->Add(this->button20);
+			this->Controls->Add(this->textBox2);
+			this->Controls->Add(this->textBox1);
+			this->Name = L"Form1";
+			this->Text = L"Form1";
+			this->ResumeLayout(false);
+			this->PerformLayout();
+
+		}
+#pragma endregion
+
+private: System::Void button20_Click(System::Object^  sender, System::EventArgs^  e) {
+			 
+			 this->textBox1->Text += "=";
+			 char* str = (char*)(void*)Marshal::StringToHGlobalAnsi(this->textBox1->Text);
+			
+			 elem* pa = (elem*)calloc(strlen(str), sizeof(elem));
+			
+			 int p = 0;
+
+			 parse(str, pa, p);
+
+			 printparse(pa, p);
+			 
+			 
+			 //creation of opz
+			 List list = initList();
+			 Stack s = initStack();
+			 
+			 for(int i = 0; i < p; i++)
+			 {
+				 if((pa+i)->tip == 0)
+					 push(list, *(pa+i));
+				 
+				 else if((pa+i)->tip == 5)
+					 {
+						 if(strcmp("(", (pa+i)->value) == 0)
+						 {
+							 (pa+i)->tip = 0;
+							 pushS(s, *(pa+i));
+						 }
+						 else if(strcmp(")", (pa+i)->value) == 0)
+						 {
+								 while(s.top->info.tip != 0)
+								 {
+									 Node* temp = s.top;
+									 push(list, temp->info);
+									 delfirstS(s);
+								 }
+							
+									 delfirstS(s);
+						 }
+					 }
+
+				 else if(s.top)
+				 {
+				
+					 if((pa+i)->tip == s.top->info.tip || (pa+i)->tip < s.top->info.tip)
+					 {
+						 Node* temp = s.top;
+						 push(list, temp->info);
+						 delfirstS(s);
+						 pushS(s, *(pa+i));
+					 }
+					 else
+						 pushS(s, *(pa+i));
+				 }
+				 
+
+				 else if(!(s.top))
+				 {
+					 pushS(s, *(pa+i));
+				 }
+			 }
+			 
+			 
+			 
+			 while(s.top)
+			 {
+				 Node* temp = s.top;
+				 push(list, temp->info);
+				 delfirstS(s);
+			 }
+
+			 printList(list);
+////////////\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+			 //CALC
+			 Stack c = initStack();
+			 
+			 while(list.top && list.bottom)
+			 {
+				 if(list.top->info.tip == 0)
+				 {
+					 pushS(c, list.top->info);
+					 delfirst(list);
+				 }
+				 
+				 else if(list.top->info.tip == 4)
+				 {
+					 double op = atof(c.top->info.value);
+					 calcunar(list.top->info.value, op);
+					 
+					 char data[10];
+					 sprintf(data, "%.10g", op); 
+					 puts(data);
+
+					 strcpy(c.top->info.value, data);
+					 delfirst(list);
+				 }
+				 else
+				 {
+					 double op2 = atof(c.top->info.value);
+					 delfirstS(c);
+					 double op1 = atof(c.top->info.value);
+					 
+					 calcbinar(list.top->info.value, op1, op2);
+
+					 char data[10];
+					 sprintf(data, "%.10g", op1); 
+					 puts(data);
+
+					 strcpy(c.top->info.value, data);
+					 delfirst(list);
+				 }
+			 }
+			 
+			 String^ res = gcnew String(c.top->info.value);
+			 this->textBox4->Text = res;
+		 }
+
+};
+}
